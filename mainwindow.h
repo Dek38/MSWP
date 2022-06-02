@@ -7,6 +7,7 @@
 #include "QVector"
 #include "buttons.h"
 #include "QMouseEvent"
+#include "QAction"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -20,11 +21,17 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     void fillTheField();
+
 private:
     QGridLayout *Grid;
     Ui::MainWindow *ui;
     QVector<Buttons*> buttonArray;
     bool eventFilter(QObject *obj, QEvent *event);
+    int m_numberOfMines = 10;
+    QVector<unsigned int> m_mineCoord;
+    int correctedFlags = 0;
+    int m_numberOfFlags = 0;
+    QAction Win;
 private slots:
     void buttonClicked();
     void openAllField();

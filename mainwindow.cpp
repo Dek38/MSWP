@@ -34,6 +34,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->centralwidget->setFixedSize(440, 440);
     QAction *Clear = new QAction("Clear", this);
     ui->menubar->addAction(Clear);
+    Win.setText("");
+    ui->menubar->addAction(&Win);
     connect(Clear, &QAction::triggered, this, &MainWindow::clearTheField);
 }
 
@@ -57,10 +59,39 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                 if ((!currentButton->getFlag()) && (currentButton->isEnabled()))
                 {
                     currentButton->setFlag();
+                    m_numberOfFlags++;
+                    for (auto it = m_mineCoord.begin(); it < m_mineCoord.end(); it++)
+                    {
+                        if ((currentButton->m_coordX * 10 + currentButton->m_coordY) == *it)
+                        {
+                            correctedFlags++;
+                            break;
+                        }
+
+                    }
+                    if ((m_numberOfMines == correctedFlags) && (m_numberOfFlags == correctedFlags))
+                    {
+                        Win.setText("Win");
+                        emit openAllField();
+                    }
                 }
                 else if (currentButton->isEnabled())
                 {
                     currentButton->clearFlag();
+                    m_numberOfFlags--;
+                    for (auto it = m_mineCoord.begin(); it < m_mineCoord.end(); it++)
+                    {
+                        if ((currentButton->m_coordX * 10 + currentButton->m_coordY) == *it)
+                        {
+                            correctedFlags--;
+                            break;
+                        }
+                    }
+                    if ((m_numberOfMines == correctedFlags) && (m_numberOfFlags == correctedFlags))
+                    {
+                        Win.setText("Win");
+                        emit openAllField();
+                    }
                 }
                 return true;
             }
@@ -96,6 +127,7 @@ void MainWindow::buttonClicked()
     currentButton->showHidenValue();
     if (currentButton->text() == "*")
     {
+        Win.setText("Lose");
         emit openAllField();
     }
     if (currentButton->text() == "")
@@ -104,56 +136,56 @@ void MainWindow::buttonClicked()
         int j = currentButton->m_coordY;
         if (j < 9)
         {
-            if (buttonArray[i * 10 + (j + 1)]->isEnabled())
+            if ((buttonArray[i * 10 + (j + 1)]->isEnabled()) && (!buttonArray[i * 10 + (j + 1)]->getFlag()))
             {
                 buttonArray[i * 10 + (j + 1)]->clicked();
             }
         }
         if (j > 0)
         {
-            if (buttonArray[i * 10 + (j - 1)]->isEnabled())
+            if (buttonArray[i * 10 + (j - 1)]->isEnabled() && (!buttonArray[i * 10 + (j - 1)]->getFlag()))
             {
                buttonArray[i * 10 + (j - 1)]->clicked();
             }
         }
         if (i < 9)
         {
-            if (buttonArray[(i + 1) * 10 + j]->isEnabled())
+            if (buttonArray[(i + 1) * 10 + j]->isEnabled() && (!buttonArray[(i + 1) * 10 + j]->getFlag()))
             {
                 buttonArray[(i + 1) * 10 + j]->clicked();
             }
         }
         if (i > 0)
         {
-            if (buttonArray[(i - 1) * 10 + j]->isEnabled())
+            if (buttonArray[(i - 1) * 10 + j]->isEnabled() && (!buttonArray[(i - 1) * 10 + j]->getFlag()))
             {
                 buttonArray[(i - 1) * 10 + j]->clicked();
             }
         }
         if ((i < 9) && (j < 9))
         {
-            if (buttonArray[(i + 1) * 10 + (j + 1)]->isEnabled())
+            if (buttonArray[(i + 1) * 10 + (j + 1)]->isEnabled() && (!buttonArray[(i + 1) * 10 + (j + 1)]->getFlag()))
             {
                 buttonArray[(i + 1) * 10 + (j + 1)]->clicked();
             }
         }
         if ((i < 9) && (j > 0))
         {
-            if (buttonArray[(i + 1) * 10 + (j - 1)]->isEnabled())
+            if (buttonArray[(i + 1) * 10 + (j - 1)]->isEnabled() && (!buttonArray[(i + 1) * 10 + (j - 1)]->getFlag()))
             {
                 buttonArray[(i + 1) * 10 + (j - 1)]->clicked();
             }
         }
         if ((i > 0) && (j < 9))
         {
-            if (buttonArray[(i - 1) * 10 + (j + 1)]->isEnabled())
+            if (buttonArray[(i - 1) * 10 + (j + 1)]->isEnabled() && (!buttonArray[(i - 1) * 10 + (j + 1)]->getFlag()))
             {
                 buttonArray[(i - 1) * 10 + (j + 1)]->clicked();;
             }
         }
         if ((i > 0) && (j > 0))
         {
-            if (buttonArray[(i - 1) * 10 + (j - 1)]->isEnabled())
+            if (buttonArray[(i - 1) * 10 + (j - 1)]->isEnabled() && (!buttonArray[(i - 1) * 10 + (j - 1)]->getFlag()))
             {
                 buttonArray[(i - 1) * 10 + (j - 1)]->clicked();
             }
@@ -166,8 +198,10 @@ void MainWindow::openAllField()
     for (auto it = buttonArray.begin(); it < buttonArray.end(); it++)
     {
         (*it)->setEnabled(false);
-        (*it)->showHidenValue();
-
+        if ((!(*it)->getFlag()) && (Win.text() != "Win"))
+        {
+            (*it)->showHidenValue();
+        }
     }
 }
 
@@ -180,12 +214,16 @@ void MainWindow::clearTheField()
         (*it)->setOrUnsetMine(false);
         (*it)->clearFlag();
     }
+    Win.setText("");
+    m_mineCoord.clear();
+    correctedFlags = 0;
+    m_numberOfFlags = 0;
     fillTheField();
 }
 
 void MainWindow::fillTheField()
 {
-    int numberOfMines = 10;
+    int numberOfMines = m_numberOfMines;
     bool finish = true;
     while (finish)
     {
@@ -195,6 +233,7 @@ void MainWindow::fillTheField()
             {
                 if (!(*it)->getMine())
                 {
+                    m_mineCoord.push_back((*it)->m_coordX * 10 + (*it)->m_coordY);
                     (*it)->setOrUnsetMine(true);
                     numberOfMines--;
                     if (numberOfMines == 0)
