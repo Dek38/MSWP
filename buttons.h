@@ -3,23 +3,32 @@
 #include <QPushButton>
 #include <memory>
 
+//Класс обёртка для кнопки под мину
+
 class Buttons: public QPushButton
 {
-    bool m_isItMine;        // true - mine
-    bool m_flagIsSeted;
-    QString m_hidenValue;
+    bool m_isItMine = false;        // true - mine
+    bool m_flagIsSeted = false;
+    QString m_hidenValue = "";
+    unsigned int m_coordX;
+    unsigned int m_coordY;
 
 public:
-    Buttons(bool mine, unsigned int X, unsigned int Y);
+    Buttons(unsigned int X, unsigned int Y);
+
     void showHidenValue();
-    bool getMine() const;
-    void setOrUnsetMine(bool mine);
     void setHidenValue(QString hidenValue);
+
+    bool getMine() const;
+    void setMine();
+    void clearMine();
+
     void setFlag();
     void clearFlag();
     bool getFlag() const;
-    unsigned int m_coordX;
-    unsigned int m_coordY;
+
+    unsigned int getCoordX() const;
+    unsigned int getCoordY() const;
 };
 
 #endif // BUTTONS_H

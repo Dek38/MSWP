@@ -20,18 +20,19 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    void fillTheField();
 
 private:
-    QGridLayout *Grid;
+    QGridLayout *gameField;
     Ui::MainWindow *ui;
     QVector<Buttons*> buttonArray;
     bool eventFilter(QObject *obj, QEvent *event);
     int m_numberOfMines = 10;
     QVector<unsigned int> m_mineCoord;
-    int correctedFlags = 0;
+    int m_numberOfCorrectedFlags = 0;
     int m_numberOfFlags = 0;
-    QAction Win;
+    QAction m_winLoseState;
+    void fillTheField();
+
 private slots:
     void buttonClicked();
     void openAllField();

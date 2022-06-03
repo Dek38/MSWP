@@ -5,39 +5,49 @@
 #include "QVector"
 #include <cstdlib>
 #include <time.h>
-#include <memory>
 
+/**
+ * @brief MainWindow::MainWindow - конструктор основного окна
+ * @param parent
+ */
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
-    Grid = new QGridLayout(this);
+    gameField = new QGridLayout(this);
     ui->setupUi(this);
-    Grid->setSpacing(0);
+    gameField->setSpacing(0);
 
-
+    // создания поля кнопок
     for (int i = 0; i < 10; i++)
     {
         for (int j = 0; j < 10; j++)
         {
-            buttonArray.push_back(new Buttons(false, i, j));
-            Grid->addWidget(dynamic_cast<QPushButton*>(buttonArray[i * 10 + j]), i, j);
+            buttonArray.push_back(new Buttons(i, j));
+            gameField->addWidget(dynamic_cast<QPushButton*>(buttonArray[i * 10 + j]), i, j);
             buttonArray[i * 10 + j]->installEventFilter(this);
-            connect(dynamic_cast<QPushButton*>(buttonArray[i * 10 + j]), &QPushButton::clicked, this, &MainWindow::buttonClicked);
+            connect(dynamic_cast<QPushButton*>(buttonArray[i * 10 + j]), &QPushButton::clicked,
+                    this, &MainWindow::buttonClicked);
         }
     }
+
+    srand(time(0));
     fillTheField();
 
 
-    ui->centralwidget->setLayout(Grid);
+    ui->centralwidget->setLayout(gameField);
     ui->centralwidget->setFixedSize(440, 440);
     QAction *Clear = new QAction("Clear", this);
     ui->menubar->addAction(Clear);
-    Win.setText("");
-    ui->menubar->addAction(&Win);
+    m_winLoseState.setText("");
+    ui->menubar->addAction(&m_winLoseState);
     connect(Clear, &QAction::triggered, this, &MainWindow::clearTheField);
 }
+
+/**
+ * @brief MainWindow::~MainWindow - деструктор основного окна
+ */
 
 MainWindow::~MainWindow()
 {
@@ -48,12 +58,21 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+/**
+ * @brief MainWindow::eventFilter - метод для фильтрации событий
+ * @param obj - объект, который возбудил событие
+ * @param event - возбужденное собтие
+ * @return возвращает состояние обработки осбытия
+ */
+
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
     if (event->type() == QEvent::MouseButtonPress)
     {
             QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
             Buttons* currentButton = dynamic_cast<Buttons*>(obj);
+
+            // обработка нажатия правой кнопки мыши
             if(mouseEvent->button() == Qt::RightButton)
             {
                 if ((!currentButton->getFlag()) && (currentButton->isEnabled()))
@@ -62,16 +81,17 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                     m_numberOfFlags++;
                     for (auto it = m_mineCoord.begin(); it < m_mineCoord.end(); it++)
                     {
-                        if ((currentButton->m_coordX * 10 + currentButton->m_coordY) == *it)
+                        if ((currentButton->getCoordX() * 10 + currentButton->getCoordY()) == *it)
                         {
-                            correctedFlags++;
+                            m_numberOfCorrectedFlags++;
                             break;
                         }
 
                     }
-                    if ((m_numberOfMines == correctedFlags) && (m_numberOfFlags == correctedFlags))
+                    if ((m_numberOfMines == m_numberOfCorrectedFlags) &&
+                        (m_numberOfFlags == m_numberOfCorrectedFlags))
                     {
-                        Win.setText("Win");
+                        m_winLoseState.setText("Win");
                         emit openAllField();
                     }
                 }
@@ -81,20 +101,22 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                     m_numberOfFlags--;
                     for (auto it = m_mineCoord.begin(); it < m_mineCoord.end(); it++)
                     {
-                        if ((currentButton->m_coordX * 10 + currentButton->m_coordY) == *it)
+                        if ((currentButton->getCoordX() * 10 + currentButton->getCoordY()) == *it)
                         {
-                            correctedFlags--;
+                            m_numberOfCorrectedFlags--;
                             break;
                         }
                     }
-                    if ((m_numberOfMines == correctedFlags) && (m_numberOfFlags == correctedFlags))
+                    if ((m_numberOfMines == m_numberOfCorrectedFlags) &&
+                        (m_numberOfFlags == m_numberOfCorrectedFlags))
                     {
-                        Win.setText("Win");
+                        m_winLoseState.setText("Win");
                         emit openAllField();
                     }
                 }
                 return true;
             }
+            // обработка нажатия левой кнопки мыши
             else if(mouseEvent->button() == Qt::LeftButton)
             {
                 if ((!currentButton->getFlag()) && (currentButton->isEnabled()))
@@ -109,83 +131,97 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             }
 
     }
+    // запрет работы двойного нажатия
     else if (event->type() == QEvent::MouseButtonDblClick)
     {
         return true;
     }
+    // обработка всех остальных событий
     else
     {
-             // standard event processing
-            return QObject::eventFilter(obj, event);
+        return QObject::eventFilter(obj, event);
     }
 }
+
+/**
+ * @brief MainWindow::buttonClicked - слот для обработки нажатия левой кнопки мыши
+ */
 
 void MainWindow::buttonClicked()
 {
     Buttons* currentButton = dynamic_cast<Buttons*>(sender());
     currentButton->setEnabled(false);
     currentButton->showHidenValue();
+    // проверка на мины и пустые кнопки
     if (currentButton->text() == "*")
     {
-        Win.setText("Lose");
+        m_winLoseState.setText("Lose");
         emit openAllField();
     }
     if (currentButton->text() == "")
     {
-        int i = currentButton->m_coordX;
-        int j = currentButton->m_coordY;
+        int i = currentButton->getCoordX();
+        int j = currentButton->getCoordY();
         if (j < 9)
         {
-            if ((buttonArray[i * 10 + (j + 1)]->isEnabled()) && (!buttonArray[i * 10 + (j + 1)]->getFlag()))
+            if ((buttonArray[i * 10 + (j + 1)]->isEnabled()) &&
+               (!buttonArray[i * 10 + (j + 1)]->getFlag()))
             {
                 buttonArray[i * 10 + (j + 1)]->clicked();
             }
         }
         if (j > 0)
         {
-            if (buttonArray[i * 10 + (j - 1)]->isEnabled() && (!buttonArray[i * 10 + (j - 1)]->getFlag()))
+            if (buttonArray[i * 10 + (j - 1)]->isEnabled() &&
+              (!buttonArray[i * 10 + (j - 1)]->getFlag()))
             {
                buttonArray[i * 10 + (j - 1)]->clicked();
             }
         }
         if (i < 9)
         {
-            if (buttonArray[(i + 1) * 10 + j]->isEnabled() && (!buttonArray[(i + 1) * 10 + j]->getFlag()))
+            if (buttonArray[(i + 1) * 10 + j]->isEnabled() &&
+              (!buttonArray[(i + 1) * 10 + j]->getFlag()))
             {
                 buttonArray[(i + 1) * 10 + j]->clicked();
             }
         }
         if (i > 0)
         {
-            if (buttonArray[(i - 1) * 10 + j]->isEnabled() && (!buttonArray[(i - 1) * 10 + j]->getFlag()))
+            if (buttonArray[(i - 1) * 10 + j]->isEnabled() &&
+              (!buttonArray[(i - 1) * 10 + j]->getFlag()))
             {
                 buttonArray[(i - 1) * 10 + j]->clicked();
             }
         }
         if ((i < 9) && (j < 9))
         {
-            if (buttonArray[(i + 1) * 10 + (j + 1)]->isEnabled() && (!buttonArray[(i + 1) * 10 + (j + 1)]->getFlag()))
+            if (buttonArray[(i + 1) * 10 + (j + 1)]->isEnabled() &&
+              (!buttonArray[(i + 1) * 10 + (j + 1)]->getFlag()))
             {
                 buttonArray[(i + 1) * 10 + (j + 1)]->clicked();
             }
         }
         if ((i < 9) && (j > 0))
         {
-            if (buttonArray[(i + 1) * 10 + (j - 1)]->isEnabled() && (!buttonArray[(i + 1) * 10 + (j - 1)]->getFlag()))
+            if (buttonArray[(i + 1) * 10 + (j - 1)]->isEnabled() &&
+              (!buttonArray[(i + 1) * 10 + (j - 1)]->getFlag()))
             {
                 buttonArray[(i + 1) * 10 + (j - 1)]->clicked();
             }
         }
         if ((i > 0) && (j < 9))
         {
-            if (buttonArray[(i - 1) * 10 + (j + 1)]->isEnabled() && (!buttonArray[(i - 1) * 10 + (j + 1)]->getFlag()))
+            if (buttonArray[(i - 1) * 10 + (j + 1)]->isEnabled() &&
+              (!buttonArray[(i - 1) * 10 + (j + 1)]->getFlag()))
             {
                 buttonArray[(i - 1) * 10 + (j + 1)]->clicked();;
             }
         }
         if ((i > 0) && (j > 0))
         {
-            if (buttonArray[(i - 1) * 10 + (j - 1)]->isEnabled() && (!buttonArray[(i - 1) * 10 + (j - 1)]->getFlag()))
+            if (buttonArray[(i - 1) * 10 + (j - 1)]->isEnabled() &&
+              (!buttonArray[(i - 1) * 10 + (j - 1)]->getFlag()))
             {
                 buttonArray[(i - 1) * 10 + (j - 1)]->clicked();
             }
@@ -193,17 +229,26 @@ void MainWindow::buttonClicked()
     }
 }
 
+/**
+ * @brief MainWindow::openAllField - метод для открытия поля при победе или поражении
+ *        При победе открывает поле полностью при поражении только блокирует поле
+ */
+
 void MainWindow::openAllField()
 {
     for (auto it = buttonArray.begin(); it < buttonArray.end(); it++)
     {
         (*it)->setEnabled(false);
-        if ((!(*it)->getFlag()) && (Win.text() != "Win"))
+        if ((!(*it)->getFlag()) && (m_winLoseState.text() != "Win"))
         {
             (*it)->showHidenValue();
         }
     }
 }
+
+/**
+ * @brief MainWindow::clearTheField - метод для очистки поля и установки новых мин
+ */
 
 void MainWindow::clearTheField()
 {
@@ -211,20 +256,27 @@ void MainWindow::clearTheField()
     {
         (*it)->setText("");
         (*it)->setEnabled(true);
-        (*it)->setOrUnsetMine(false);
+        (*it)->clearMine();
         (*it)->clearFlag();
     }
-    Win.setText("");
+    m_winLoseState.setText("");
     m_mineCoord.clear();
-    correctedFlags = 0;
+    m_numberOfCorrectedFlags = 0;
     m_numberOfFlags = 0;
+    srand(time(0));
     fillTheField();
 }
+
+/**
+ * @brief MainWindow::fillTheField - метод для заполнения поля
+ */
 
 void MainWindow::fillTheField()
 {
     int numberOfMines = m_numberOfMines;
     bool finish = true;
+
+    // заполние минами
     while (finish)
     {
         for (auto it = buttonArray.begin(); it < buttonArray.end(); it++)
@@ -233,8 +285,8 @@ void MainWindow::fillTheField()
             {
                 if (!(*it)->getMine())
                 {
-                    m_mineCoord.push_back((*it)->m_coordX * 10 + (*it)->m_coordY);
-                    (*it)->setOrUnsetMine(true);
+                    m_mineCoord.push_back((*it)->getCoordX() * 10 + (*it)->getCoordY());
+                    (*it)->setMine();
                     numberOfMines--;
                     if (numberOfMines == 0)
                     {
@@ -245,6 +297,8 @@ void MainWindow::fillTheField()
             }
         }
     }
+
+    // заполнение скрытыми значениями об окрестных минах
     for (int i = 0; i < 10; i++)
     {
         for (int j = 0; j < 10; j++)
@@ -311,7 +365,6 @@ void MainWindow::fillTheField()
                 if (mineAround)
                 {
                     buttonArray[i * 10 + j]->setHidenValue(QString::number(mineAround));
-
                 }
                 else
                 {
