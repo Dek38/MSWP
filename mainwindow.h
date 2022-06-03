@@ -32,6 +32,8 @@ private:
     int m_numberOfFlags = 0;
     QAction m_winLoseState;
     void fillTheField();
+    int sizeOfFieldX = 9;
+    int sizeOfFieldY = 9;
 
 private slots:
     void buttonClicked();

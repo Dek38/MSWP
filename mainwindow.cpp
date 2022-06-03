@@ -20,14 +20,14 @@ MainWindow::MainWindow(QWidget *parent)
     gameField->setSpacing(0);
 
     // создания поля кнопок
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < sizeOfFieldX; i++)
     {
-        for (int j = 0; j < 10; j++)
+        for (int j = 0; j < sizeOfFieldY; j++)
         {
             buttonArray.push_back(new Buttons(i, j));
-            gameField->addWidget(dynamic_cast<QPushButton*>(buttonArray[i * 10 + j]), i, j);
-            buttonArray[i * 10 + j]->installEventFilter(this);
-            connect(dynamic_cast<QPushButton*>(buttonArray[i * 10 + j]), &QPushButton::clicked,
+            gameField->addWidget(dynamic_cast<QPushButton*>(buttonArray[i * sizeOfFieldX + j]), i, j);
+            buttonArray[i * sizeOfFieldX + j]->installEventFilter(this);
+            connect(dynamic_cast<QPushButton*>(buttonArray[i * sizeOfFieldX + j]), &QPushButton::clicked,
                     this, &MainWindow::buttonClicked);
         }
     }
@@ -81,7 +81,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                     m_numberOfFlags++;
                     for (auto it = m_mineCoord.begin(); it < m_mineCoord.end(); it++)
                     {
-                        if ((currentButton->getCoordX() * 10 + currentButton->getCoordY()) == *it)
+                        if ((currentButton->getCoordX() * sizeOfFieldX + currentButton->getCoordY()) == *it)
                         {
                             m_numberOfCorrectedFlags++;
                             break;
@@ -101,7 +101,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                     m_numberOfFlags--;
                     for (auto it = m_mineCoord.begin(); it < m_mineCoord.end(); it++)
                     {
-                        if ((currentButton->getCoordX() * 10 + currentButton->getCoordY()) == *it)
+                        if ((currentButton->getCoordX() * sizeOfFieldX + currentButton->getCoordY()) == *it)
                         {
                             m_numberOfCorrectedFlags--;
                             break;
@@ -162,68 +162,68 @@ void MainWindow::buttonClicked()
     {
         int i = currentButton->getCoordX();
         int j = currentButton->getCoordY();
-        if (j < 9)
+        if (j < (sizeOfFieldY - 1))
         {
-            if ((buttonArray[i * 10 + (j + 1)]->isEnabled()) &&
-               (!buttonArray[i * 10 + (j + 1)]->getFlag()))
+            if ((buttonArray[i * sizeOfFieldX + (j + 1)]->isEnabled()) &&
+               (!buttonArray[i * sizeOfFieldX + (j + 1)]->getFlag()))
             {
-                buttonArray[i * 10 + (j + 1)]->clicked();
+                buttonArray[i * sizeOfFieldX + (j + 1)]->clicked();
             }
         }
         if (j > 0)
         {
-            if (buttonArray[i * 10 + (j - 1)]->isEnabled() &&
-              (!buttonArray[i * 10 + (j - 1)]->getFlag()))
+            if (buttonArray[i * sizeOfFieldX + (j - 1)]->isEnabled() &&
+              (!buttonArray[i * sizeOfFieldX + (j - 1)]->getFlag()))
             {
-               buttonArray[i * 10 + (j - 1)]->clicked();
+               buttonArray[i * 9 + (j - 1)]->clicked();
             }
         }
-        if (i < 9)
+        if (i < (sizeOfFieldX - 1))
         {
-            if (buttonArray[(i + 1) * 10 + j]->isEnabled() &&
-              (!buttonArray[(i + 1) * 10 + j]->getFlag()))
+            if (buttonArray[(i + 1) * sizeOfFieldX + j]->isEnabled() &&
+              (!buttonArray[(i + 1) * sizeOfFieldX + j]->getFlag()))
             {
-                buttonArray[(i + 1) * 10 + j]->clicked();
+                buttonArray[(i + 1) * sizeOfFieldX + j]->clicked();
             }
         }
         if (i > 0)
         {
-            if (buttonArray[(i - 1) * 10 + j]->isEnabled() &&
-              (!buttonArray[(i - 1) * 10 + j]->getFlag()))
+            if (buttonArray[(i - 1) * sizeOfFieldX + j]->isEnabled() &&
+              (!buttonArray[(i - 1) * sizeOfFieldX + j]->getFlag()))
             {
-                buttonArray[(i - 1) * 10 + j]->clicked();
+                buttonArray[(i - 1) * sizeOfFieldX + j]->clicked();
             }
         }
-        if ((i < 9) && (j < 9))
+        if ((i < (sizeOfFieldX - 1)) && (j < (sizeOfFieldY - 1)))
         {
-            if (buttonArray[(i + 1) * 10 + (j + 1)]->isEnabled() &&
-              (!buttonArray[(i + 1) * 10 + (j + 1)]->getFlag()))
+            if (buttonArray[(i + 1) * sizeOfFieldX + (j + 1)]->isEnabled() &&
+              (!buttonArray[(i + 1) * sizeOfFieldX + (j + 1)]->getFlag()))
             {
-                buttonArray[(i + 1) * 10 + (j + 1)]->clicked();
+                buttonArray[(i + 1) * sizeOfFieldX + (j + 1)]->clicked();
             }
         }
-        if ((i < 9) && (j > 0))
+        if ((i < (sizeOfFieldX - 1)) && (j > 0))
         {
-            if (buttonArray[(i + 1) * 10 + (j - 1)]->isEnabled() &&
-              (!buttonArray[(i + 1) * 10 + (j - 1)]->getFlag()))
+            if (buttonArray[(i + 1) * sizeOfFieldX + (j - 1)]->isEnabled() &&
+              (!buttonArray[(i + 1) * sizeOfFieldX + (j - 1)]->getFlag()))
             {
-                buttonArray[(i + 1) * 10 + (j - 1)]->clicked();
+                buttonArray[(i + 1) * sizeOfFieldX + (j - 1)]->clicked();
             }
         }
-        if ((i > 0) && (j < 9))
+        if ((i > 0) && (j < (sizeOfFieldY - 1)))
         {
-            if (buttonArray[(i - 1) * 10 + (j + 1)]->isEnabled() &&
-              (!buttonArray[(i - 1) * 10 + (j + 1)]->getFlag()))
+            if (buttonArray[(i - 1) * sizeOfFieldX + (j + 1)]->isEnabled() &&
+              (!buttonArray[(i - 1) * sizeOfFieldX + (j + 1)]->getFlag()))
             {
-                buttonArray[(i - 1) * 10 + (j + 1)]->clicked();;
+                buttonArray[(i - 1) * sizeOfFieldX + (j + 1)]->clicked();;
             }
         }
         if ((i > 0) && (j > 0))
         {
-            if (buttonArray[(i - 1) * 10 + (j - 1)]->isEnabled() &&
-              (!buttonArray[(i - 1) * 10 + (j - 1)]->getFlag()))
+            if (buttonArray[(i - 1) * sizeOfFieldX + (j - 1)]->isEnabled() &&
+              (!buttonArray[(i - 1) * sizeOfFieldX + (j - 1)]->getFlag()))
             {
-                buttonArray[(i - 1) * 10 + (j - 1)]->clicked();
+                buttonArray[(i - 1) * sizeOfFieldX + (j - 1)]->clicked();
             }
         }
     }
@@ -285,7 +285,7 @@ void MainWindow::fillTheField()
             {
                 if (!(*it)->getMine())
                 {
-                    m_mineCoord.push_back((*it)->getCoordX() * 10 + (*it)->getCoordY());
+                    m_mineCoord.push_back((*it)->getCoordX() * sizeOfFieldX + (*it)->getCoordY());
                     (*it)->setMine();
                     numberOfMines--;
                     if (numberOfMines == 0)
@@ -299,81 +299,81 @@ void MainWindow::fillTheField()
     }
 
     // заполнение скрытыми значениями об окрестных минах
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < sizeOfFieldX; i++)
     {
-        for (int j = 0; j < 10; j++)
+        for (int j = 0; j < sizeOfFieldY; j++)
         {
             int mineAround = 0;
-            if (buttonArray[i * 10 + j]->getMine() == false)
+            if (buttonArray[i * sizeOfFieldX + j]->getMine() == false)
             {
-                if (j < 9)
+                if (j < (sizeOfFieldY - 1))
                 {
-                    if (buttonArray[i * 10 + (j + 1)]->getMine() == true)
+                    if (buttonArray[i * sizeOfFieldX + (j + 1)]->getMine() == true)
                     {
                         mineAround++;
                     }
                 }
                 if (j > 0)
                 {
-                    if (buttonArray[i * 10 + (j - 1)]->getMine() == true)
+                    if (buttonArray[i * sizeOfFieldX + (j - 1)]->getMine() == true)
                     {
                         mineAround++;
                     }
                 }
-                if (i < 9)
+                if (i < (sizeOfFieldX - 1))
                 {
-                    if (buttonArray[(i + 1) * 10 + j]->getMine() == true)
+                    if (buttonArray[(i + 1) * sizeOfFieldX + j]->getMine() == true)
                     {
                         mineAround++;
                     }
                 }
                 if (i > 0)
                 {
-                    if (buttonArray[(i - 1) * 10 + j]->getMine() == true)
+                    if (buttonArray[(i - 1) * sizeOfFieldX + j]->getMine() == true)
                     {
                         mineAround++;
                     }
                 }
-                if ((i < 9) && (j < 9))
+                if ((i < (sizeOfFieldX - 1)) && (j < (sizeOfFieldY - 1)))
                 {
-                    if (buttonArray[(i + 1) * 10 + (j + 1)]->getMine() == true)
+                    if (buttonArray[(i + 1) * sizeOfFieldX + (j + 1)]->getMine() == true)
                     {
                         mineAround++;
                     }
                 }
-                if ((i < 9) && (j > 0))
+                if ((i < (sizeOfFieldX - 1)) && (j > 0))
                 {
-                    if (buttonArray[(i + 1) * 10 + (j - 1)]->getMine() == true)
+                    if (buttonArray[(i + 1) * sizeOfFieldX + (j - 1)]->getMine() == true)
                     {
                         mineAround++;
                     }
                 }
-                if ((i > 0) && (j < 9))
+                if ((i > 0) && (j < (sizeOfFieldY - 1)))
                 {
-                    if (buttonArray[(i - 1) * 10 + (j + 1)]->getMine() == true)
+                    if (buttonArray[(i - 1) * sizeOfFieldX + (j + 1)]->getMine() == true)
                     {
                         mineAround++;
                     }
                 }
                 if ((i > 0) && (j > 0))
                 {
-                    if (buttonArray[(i - 1) * 10 + (j - 1)]->getMine() == true)
+                    if (buttonArray[(i - 1) * sizeOfFieldX + (j - 1)]->getMine() == true)
                     {
                         mineAround++;
                     }
                 }
                 if (mineAround)
                 {
-                    buttonArray[i * 10 + j]->setHidenValue(QString::number(mineAround));
+                    buttonArray[i * sizeOfFieldX + j]->setHidenValue(QString::number(mineAround));
                 }
                 else
                 {
-                    buttonArray[i * 10 + j]->setHidenValue("");
+                    buttonArray[i * sizeOfFieldX + j]->setHidenValue("");
                 }
             }
             else
             {
-                buttonArray[i * 10 + j]->setHidenValue("*");
+                buttonArray[i * sizeOfFieldX + j]->setHidenValue("*");
             }
         }
     }
