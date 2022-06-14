@@ -22,40 +22,39 @@ Buttons::Buttons(unsigned int X, unsigned int Y)
 
 void Buttons::showHidenValue()
 {
-    setStyleSheet("QPushButton {color: red;}");
+    QString color = "red";
     switch (m_hidenValue.toInt()) {
     case 1:
-        setStyleSheet("QPushButton {color: blue;}");
+        color = "blue";
         break;
     case 2:
-        setStyleSheet("QPushButton {color: green;}");
+        color = "green";
         break;
     case 3:
-        setStyleSheet("QPushButton {color: red;}");
+        color = "red";
         break;
     case 4:
-        setStyleSheet("QPushButton {color: purple;}");
+        color = "purple";
         break;
     case 5:
-        setStyleSheet("QPushButton {color: brown;}");
+        color = "brown";
         break;
     case 6:
-        setStyleSheet("QPushButton {color: pink;}");
+        color = "pink";
         break;
     case 7:
-        setStyleSheet("QPushButton {color: black;}");
+        color = "black";
         break;
     case 8:
-        setStyleSheet("QPushButton {color: white;}");
+        color = "white";
         break;
     default:
-        setStyleSheet("QPushButton {color: yellow;}");
+        color = "yellow";
         break;
     }
-    if (m_hidenValue == "1")
-    {
 
-    }
+    setStyleSheet("QPushButton {color: " + color + ";}");
+
     this->setText(m_hidenValue);
 }
 

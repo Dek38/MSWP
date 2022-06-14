@@ -71,65 +71,70 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     {
             QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
             Buttons* currentButton = dynamic_cast<Buttons*>(obj);
-
-            // обработка нажатия правой кнопки мыши
-            if(mouseEvent->button() == Qt::RightButton)
+            if (currentButton != nullptr)
             {
-                if ((!currentButton->getFlag()) && (currentButton->isEnabled()))
+                // обработка нажатия правой кнопки мыши
+                if(mouseEvent->button() == Qt::RightButton)
                 {
-                    currentButton->setFlag();
-                    m_numberOfFlags++;
-                    for (auto it = m_mineCoord.begin(); it < m_mineCoord.end(); it++)
+                    if ((!currentButton->getFlag()) && (currentButton->isEnabled()))
                     {
-                        if ((currentButton->getCoordX() * sizeOfFieldX + currentButton->getCoordY()) == *it)
+                        currentButton->setFlag();
+                        m_numberOfFlags++;
+                        for (auto it = m_mineCoord.begin(); it < m_mineCoord.end(); it++)
                         {
-                            m_numberOfCorrectedFlags++;
-                            break;
-                        }
+                            if ((currentButton->getCoordX() * sizeOfFieldX + currentButton->getCoordY()) == *it)
+                            {
+                                m_numberOfCorrectedFlags++;
+                                break;
+                            }
 
-                    }
-                    if ((m_numberOfMines == m_numberOfCorrectedFlags) &&
-                        (m_numberOfFlags == m_numberOfCorrectedFlags))
-                    {
-                        m_winLoseState.setText("Win");
-                        emit openAllField();
-                    }
-                }
-                else if (currentButton->isEnabled())
-                {
-                    currentButton->clearFlag();
-                    m_numberOfFlags--;
-                    for (auto it = m_mineCoord.begin(); it < m_mineCoord.end(); it++)
-                    {
-                        if ((currentButton->getCoordX() * sizeOfFieldX + currentButton->getCoordY()) == *it)
+                        }
+                        if ((m_numberOfMines == m_numberOfCorrectedFlags) &&
+                            (m_numberOfFlags == m_numberOfCorrectedFlags))
                         {
-                            m_numberOfCorrectedFlags--;
-                            break;
+                            m_winLoseState.setText("Win");
+                            emit openAllField();
                         }
                     }
-                    if ((m_numberOfMines == m_numberOfCorrectedFlags) &&
-                        (m_numberOfFlags == m_numberOfCorrectedFlags))
+                    else if (currentButton->isEnabled())
                     {
-                        m_winLoseState.setText("Win");
-                        emit openAllField();
+                        currentButton->clearFlag();
+                        m_numberOfFlags--;
+                        for (auto it = m_mineCoord.begin(); it < m_mineCoord.end(); it++)
+                        {
+                            if ((currentButton->getCoordX() * sizeOfFieldX + currentButton->getCoordY()) == *it)
+                            {
+                                m_numberOfCorrectedFlags--;
+                                break;
+                            }
+                        }
+                        if ((m_numberOfMines == m_numberOfCorrectedFlags) &&
+                            (m_numberOfFlags == m_numberOfCorrectedFlags))
+                        {
+                            m_winLoseState.setText("Win");
+                            emit openAllField();
+                        }
                     }
+                    return true;
                 }
-                return true;
-            }
-            // обработка нажатия левой кнопки мыши
-            else if(mouseEvent->button() == Qt::LeftButton)
-            {
-                if ((!currentButton->getFlag()) && (currentButton->isEnabled()))
+                // обработка нажатия левой кнопки мыши
+                else if(mouseEvent->button() == Qt::LeftButton)
                 {
-                    currentButton->clicked();
+                    if ((!currentButton->getFlag()) && (currentButton->isEnabled()))
+                    {
+                        currentButton->clicked();
+                    }
+                    return true;
                 }
-                return true;
+                else
+                {
+                    return QObject::eventFilter(obj, event);
+                }
             }
             else
             {
-                return QObject::eventFilter(obj, event);
+                return false;
             }
-
     }
     // запрет работы двойного нажатия
     else if (event->type() == QEvent::MouseButtonDblClick)
@@ -150,80 +155,83 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 void MainWindow::buttonClicked()
 {
     Buttons* currentButton = dynamic_cast<Buttons*>(sender());
-    currentButton->setEnabled(false);
-    currentButton->showHidenValue();
-    // проверка на мины и пустые кнопки
-    if (currentButton->text() == "*")
+    if (currentButton != nullptr)
     {
-        m_winLoseState.setText("Lose");
-        emit openAllField();
-    }
-    if (currentButton->text() == "")
-    {
-        int i = currentButton->getCoordX();
-        int j = currentButton->getCoordY();
-        if (j < (sizeOfFieldY - 1))
+        currentButton->setEnabled(false);
+        currentButton->showHidenValue();
+        // проверка на мины и пустые кнопки
+        if (currentButton->text() == "*")
         {
-            if ((buttonArray[i * sizeOfFieldX + (j + 1)]->isEnabled()) &&
-               (!buttonArray[i * sizeOfFieldX + (j + 1)]->getFlag()))
-            {
-                buttonArray[i * sizeOfFieldX + (j + 1)]->clicked();
-            }
+            m_winLoseState.setText("Lose");
+            emit openAllField();
         }
-        if (j > 0)
+        if (currentButton->text() == "")
         {
-            if (buttonArray[i * sizeOfFieldX + (j - 1)]->isEnabled() &&
-              (!buttonArray[i * sizeOfFieldX + (j - 1)]->getFlag()))
+            int i = currentButton->getCoordX();
+            int j = currentButton->getCoordY();
+            if (j < (sizeOfFieldY - 1))
             {
-               buttonArray[i * 9 + (j - 1)]->clicked();
+                if ((buttonArray[i * sizeOfFieldX + (j + 1)]->isEnabled()) &&
+                    (!buttonArray[i * sizeOfFieldX + (j + 1)]->getFlag()))
+                {
+                    buttonArray[i * sizeOfFieldX + (j + 1)]->clicked();
+                }
             }
-        }
-        if (i < (sizeOfFieldX - 1))
-        {
-            if (buttonArray[(i + 1) * sizeOfFieldX + j]->isEnabled() &&
-              (!buttonArray[(i + 1) * sizeOfFieldX + j]->getFlag()))
+            if (j > 0)
             {
-                buttonArray[(i + 1) * sizeOfFieldX + j]->clicked();
+                if (buttonArray[i * sizeOfFieldX + (j - 1)]->isEnabled() &&
+                   (!buttonArray[i * sizeOfFieldX + (j - 1)]->getFlag()))
+                {
+                   buttonArray[i * 9 + (j - 1)]->clicked();
+                }
             }
-        }
-        if (i > 0)
-        {
-            if (buttonArray[(i - 1) * sizeOfFieldX + j]->isEnabled() &&
-              (!buttonArray[(i - 1) * sizeOfFieldX + j]->getFlag()))
+            if (i < (sizeOfFieldX - 1))
             {
-                buttonArray[(i - 1) * sizeOfFieldX + j]->clicked();
+                if (buttonArray[(i + 1) * sizeOfFieldX + j]->isEnabled() &&
+                   (!buttonArray[(i + 1) * sizeOfFieldX + j]->getFlag()))
+                {
+                    buttonArray[(i + 1) * sizeOfFieldX + j]->clicked();
+                }
             }
-        }
-        if ((i < (sizeOfFieldX - 1)) && (j < (sizeOfFieldY - 1)))
-        {
-            if (buttonArray[(i + 1) * sizeOfFieldX + (j + 1)]->isEnabled() &&
-              (!buttonArray[(i + 1) * sizeOfFieldX + (j + 1)]->getFlag()))
+            if (i > 0)
             {
-                buttonArray[(i + 1) * sizeOfFieldX + (j + 1)]->clicked();
+                if (buttonArray[(i - 1) * sizeOfFieldX + j]->isEnabled() &&
+                   (!buttonArray[(i - 1) * sizeOfFieldX + j]->getFlag()))
+                {
+                    buttonArray[(i - 1) * sizeOfFieldX + j]->clicked();
+                }
             }
-        }
-        if ((i < (sizeOfFieldX - 1)) && (j > 0))
-        {
-            if (buttonArray[(i + 1) * sizeOfFieldX + (j - 1)]->isEnabled() &&
-              (!buttonArray[(i + 1) * sizeOfFieldX + (j - 1)]->getFlag()))
+            if ((i < (sizeOfFieldX - 1)) && (j < (sizeOfFieldY - 1)))
             {
-                buttonArray[(i + 1) * sizeOfFieldX + (j - 1)]->clicked();
+                if (buttonArray[(i + 1) * sizeOfFieldX + (j + 1)]->isEnabled() &&
+                   (!buttonArray[(i + 1) * sizeOfFieldX + (j + 1)]->getFlag()))
+                {
+                    buttonArray[(i + 1) * sizeOfFieldX + (j + 1)]->clicked();
+                }
             }
-        }
-        if ((i > 0) && (j < (sizeOfFieldY - 1)))
-        {
-            if (buttonArray[(i - 1) * sizeOfFieldX + (j + 1)]->isEnabled() &&
-              (!buttonArray[(i - 1) * sizeOfFieldX + (j + 1)]->getFlag()))
+            if ((i < (sizeOfFieldX - 1)) && (j > 0))
             {
-                buttonArray[(i - 1) * sizeOfFieldX + (j + 1)]->clicked();;
+                if (buttonArray[(i + 1) * sizeOfFieldX + (j - 1)]->isEnabled() &&
+                   (!buttonArray[(i + 1) * sizeOfFieldX + (j - 1)]->getFlag()))
+                {
+                    buttonArray[(i + 1) * sizeOfFieldX + (j - 1)]->clicked();
+                }
             }
-        }
-        if ((i > 0) && (j > 0))
-        {
-            if (buttonArray[(i - 1) * sizeOfFieldX + (j - 1)]->isEnabled() &&
-              (!buttonArray[(i - 1) * sizeOfFieldX + (j - 1)]->getFlag()))
+            if ((i > 0) && (j < (sizeOfFieldY - 1)))
             {
-                buttonArray[(i - 1) * sizeOfFieldX + (j - 1)]->clicked();
+                if (buttonArray[(i - 1) * sizeOfFieldX + (j + 1)]->isEnabled() &&
+                   (!buttonArray[(i - 1) * sizeOfFieldX + (j + 1)]->getFlag()))
+                {
+                    buttonArray[(i - 1) * sizeOfFieldX + (j + 1)]->clicked();;
+                }
+            }
+            if ((i > 0) && (j > 0))
+            {
+                if (buttonArray[(i - 1) * sizeOfFieldX + (j - 1)]->isEnabled() &&
+                   (!buttonArray[(i - 1) * sizeOfFieldX + (j - 1)]->getFlag()))
+                {
+                    buttonArray[(i - 1) * sizeOfFieldX + (j - 1)]->clicked();
+                }
             }
         }
     }
