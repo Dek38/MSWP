@@ -34,10 +34,14 @@ private:
     void fillTheField();
     int sizeOfFieldX = 9;
     int sizeOfFieldY = 9;
-
+    const int sizeOfBeginnerFieldX = 9;
+    const int sizeOfBeginnerFieldY = 9;
+    const int sizeOfIntermediateFieldX = 16;
+    const int sizeOfIntermediateFieldY = 16;
 private slots:
     void buttonClicked();
     void openAllField();
     void clearTheField();
+    void changeMode();
 };
 #endif // MAINWINDOW_H

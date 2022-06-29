@@ -9,9 +9,9 @@
 Buttons::Buttons(unsigned int X, unsigned int Y)
        : QPushButton(""), m_coordX(X), m_coordY(Y)
 {
-    this->setFixedSize(40, 40);
+    this->setFixedSize(30, 30);
     QFont pushButtonFont = this->font();
-    pushButtonFont.setPointSize(20);
+    pushButtonFont.setPointSize(16);
     this->setFont(pushButtonFont);
     m_flagIsSeted = false;
 }

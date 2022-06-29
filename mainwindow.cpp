@@ -20,14 +20,14 @@ MainWindow::MainWindow(QWidget *parent)
     gameField->setSpacing(0);
 
     // создания поля кнопок
-    for (int i = 0; i < sizeOfFieldX; i++)
+    for (int i = 0; i < sizeOfBeginnerFieldX; i++)
     {
-        for (int j = 0; j < sizeOfFieldY; j++)
+        for (int j = 0; j < sizeOfBeginnerFieldY; j++)
         {
             buttonArray.push_back(new Buttons(i, j));
-            gameField->addWidget(dynamic_cast<QPushButton*>(buttonArray[i * sizeOfFieldX + j]), i, j);
-            buttonArray[i * sizeOfFieldX + j]->installEventFilter(this);
-            connect(dynamic_cast<QPushButton*>(buttonArray[i * sizeOfFieldX + j]), &QPushButton::clicked,
+            gameField->addWidget(dynamic_cast<QPushButton*>(buttonArray[i * sizeOfBeginnerFieldX + j]), i, j);
+            buttonArray[i * sizeOfBeginnerFieldX + j]->installEventFilter(this);
+            connect(dynamic_cast<QPushButton*>(buttonArray[i * sizeOfBeginnerFieldX + j]), &QPushButton::clicked,
                     this, &MainWindow::buttonClicked);
         }
     }
@@ -37,12 +37,23 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     ui->centralwidget->setLayout(gameField);
-    ui->centralwidget->setFixedSize(440, 440);
+    ui->centralwidget->setFixedSize(300, 300);
+    this->setFixedSize(300, 330);
+
     QAction *Clear = new QAction("Clear", this);
     ui->menubar->addAction(Clear);
     m_winLoseState.setText("");
     ui->menubar->addAction(&m_winLoseState);
+
+    QAction *setBeginnerMode = new QAction("9x9", this);
+    QAction *setIntermediateMode = new QAction("16x16", this);
+
+    ui->menubar->addAction(setBeginnerMode);
+    ui->menubar->addAction(setIntermediateMode);
+
     connect(Clear, &QAction::triggered, this, &MainWindow::clearTheField);
+    connect(setBeginnerMode, &QAction::triggered, this, &MainWindow::changeMode);
+    connect(setIntermediateMode, &QAction::triggered, this, &MainWindow::changeMode);
 }
 
 /**
@@ -56,6 +67,50 @@ MainWindow::~MainWindow()
         delete *it;
     }
     delete ui;
+}
+
+void MainWindow::changeMode()
+{
+
+    auto mode = dynamic_cast<QAction*>(sender());
+
+    for (auto it = buttonArray.begin(); it < buttonArray.end(); it++)
+    {
+        delete *it;
+    }
+
+    buttonArray.clear();
+
+    if (mode->text() == "16x16")
+    {
+        m_numberOfMines = 40;
+        this->setFixedSize(540, 570);
+        ui->centralwidget->setFixedSize(540, 540);
+        sizeOfFieldX = sizeOfIntermediateFieldX;
+        sizeOfFieldY = sizeOfIntermediateFieldY;
+    }
+    else
+    {
+        m_numberOfMines = 10;
+        ui->centralwidget->setFixedSize(300, 300);
+        this->setFixedSize(300, 330);
+        sizeOfFieldX = sizeOfBeginnerFieldX;
+        sizeOfFieldY = sizeOfBeginnerFieldY;
+    }
+
+    for (int i = 0; i < sizeOfFieldX; i++)
+    {
+        for (int j = 0; j < sizeOfFieldY; j++)
+        {
+            buttonArray.push_back(new Buttons(i, j));
+            gameField->addWidget(dynamic_cast<QPushButton*>(buttonArray[i * sizeOfFieldX + j]), i, j);
+            buttonArray[i * sizeOfFieldX + j]->installEventFilter(this);
+            connect(dynamic_cast<QPushButton*>(buttonArray[i * sizeOfFieldX + j]), &QPushButton::clicked,
+                    this, &MainWindow::buttonClicked);
+         }
+    }
+    emit clearTheField();
+    ui->centralwidget->layout()->update();
 }
 
 /**
@@ -171,66 +226,74 @@ void MainWindow::buttonClicked()
             int j = currentButton->getCoordY();
             if (j < (sizeOfFieldY - 1))
             {
-                if ((buttonArray[i * sizeOfFieldX + (j + 1)]->isEnabled()) &&
-                    (!buttonArray[i * sizeOfFieldX + (j + 1)]->getFlag()))
+                auto currentButton = buttonArray[i * sizeOfFieldX + (j + 1)];
+                if ((currentButton->isEnabled()) &&
+                    (!currentButton->getFlag()))
                 {
                     buttonArray[i * sizeOfFieldX + (j + 1)]->clicked();
                 }
             }
             if (j > 0)
             {
-                if (buttonArray[i * sizeOfFieldX + (j - 1)]->isEnabled() &&
-                   (!buttonArray[i * sizeOfFieldX + (j - 1)]->getFlag()))
+                auto currentButton = buttonArray[i * sizeOfFieldX + (j - 1)];
+                if (currentButton->isEnabled() &&
+                   (!currentButton->getFlag()))
                 {
-                   buttonArray[i * 9 + (j - 1)]->clicked();
+                   currentButton->clicked();
                 }
             }
             if (i < (sizeOfFieldX - 1))
             {
-                if (buttonArray[(i + 1) * sizeOfFieldX + j]->isEnabled() &&
-                   (!buttonArray[(i + 1) * sizeOfFieldX + j]->getFlag()))
+                auto currentButton = buttonArray[(i + 1) * sizeOfFieldX + j];
+                if (currentButton->isEnabled() &&
+                   (!currentButton->getFlag()))
                 {
-                    buttonArray[(i + 1) * sizeOfFieldX + j]->clicked();
+                    currentButton->clicked();
                 }
             }
             if (i > 0)
             {
-                if (buttonArray[(i - 1) * sizeOfFieldX + j]->isEnabled() &&
-                   (!buttonArray[(i - 1) * sizeOfFieldX + j]->getFlag()))
+                auto currentButton = buttonArray[(i - 1) * sizeOfFieldX + j];
+                if (currentButton->isEnabled() &&
+                   (!currentButton->getFlag()))
                 {
-                    buttonArray[(i - 1) * sizeOfFieldX + j]->clicked();
+                    currentButton->clicked();
                 }
             }
             if ((i < (sizeOfFieldX - 1)) && (j < (sizeOfFieldY - 1)))
             {
-                if (buttonArray[(i + 1) * sizeOfFieldX + (j + 1)]->isEnabled() &&
-                   (!buttonArray[(i + 1) * sizeOfFieldX + (j + 1)]->getFlag()))
+                auto currentButton = buttonArray[(i + 1) * sizeOfFieldX + (j + 1)];
+                if (currentButton->isEnabled() &&
+                   (!currentButton->getFlag()))
                 {
-                    buttonArray[(i + 1) * sizeOfFieldX + (j + 1)]->clicked();
+                    currentButton->clicked();
                 }
             }
             if ((i < (sizeOfFieldX - 1)) && (j > 0))
             {
-                if (buttonArray[(i + 1) * sizeOfFieldX + (j - 1)]->isEnabled() &&
-                   (!buttonArray[(i + 1) * sizeOfFieldX + (j - 1)]->getFlag()))
+                auto currentButton = buttonArray[(i + 1) * sizeOfFieldX + (j - 1)];
+                if (currentButton->isEnabled() &&
+                   (!currentButton->getFlag()))
                 {
-                    buttonArray[(i + 1) * sizeOfFieldX + (j - 1)]->clicked();
+                    currentButton->clicked();
                 }
             }
             if ((i > 0) && (j < (sizeOfFieldY - 1)))
             {
-                if (buttonArray[(i - 1) * sizeOfFieldX + (j + 1)]->isEnabled() &&
-                   (!buttonArray[(i - 1) * sizeOfFieldX + (j + 1)]->getFlag()))
+                auto currentButton = buttonArray[(i - 1) * sizeOfFieldX + (j + 1)];
+                if (currentButton->isEnabled() &&
+                   (!currentButton->getFlag()))
                 {
-                    buttonArray[(i - 1) * sizeOfFieldX + (j + 1)]->clicked();;
+                    currentButton->clicked();;
                 }
             }
             if ((i > 0) && (j > 0))
             {
-                if (buttonArray[(i - 1) * sizeOfFieldX + (j - 1)]->isEnabled() &&
-                   (!buttonArray[(i - 1) * sizeOfFieldX + (j - 1)]->getFlag()))
+                currentButton = buttonArray[(i - 1) * sizeOfFieldX + (j - 1)];
+                if (currentButton->isEnabled() &&
+                   (!currentButton->getFlag()))
                 {
-                    buttonArray[(i - 1) * sizeOfFieldX + (j - 1)]->clicked();
+                    currentButton->clicked();
                 }
             }
         }
@@ -289,7 +352,7 @@ void MainWindow::fillTheField()
     {
         for (auto it = buttonArray.begin(); it < buttonArray.end(); it++)
         {
-            if ((std::rand() % 11) == 10)
+            if ((std::rand() % 100) == 10)
             {
                 if (!(*it)->getMine())
                 {
