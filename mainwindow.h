@@ -27,7 +27,6 @@ private:
     QVector<Buttons*> buttonArray;
     bool eventFilter(QObject *obj, QEvent *event);
     int m_numberOfMines = 10;
-    QVector<unsigned int> m_mineCoord;
     int m_numberOfCorrectedFlags = 0;
     int m_numberOfFlags = 0;
     QAction m_winLoseState;
