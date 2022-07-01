@@ -18,7 +18,7 @@ MainWindow::MainWindow(QWidget *parent)
     gameField = new QGridLayout(this);
     ui->setupUi(this);
     gameField->setSpacing(0);
-
+    buttonArray.reserve(30*16);
     // создания поля кнопок
     for (int i = 0; i < sizeOfBeginnerFieldX; i++)
     {
@@ -314,10 +314,16 @@ void MainWindow::openAllField()
 {
     for (auto it = buttonArray.begin(); it < buttonArray.end(); it++)
     {
+
         (*it)->setEnabled(false);
         if ((!(*it)->getFlag()) && (m_winLoseState.text() != "Win"))
         {
             (*it)->showHidenValue();
+        }
+        else if (((*it)->getFlag()) && (m_winLoseState.text() != "Win") &&
+                 (!(*it)->getMine()))
+        {
+            (*it)->setText("F");
         }
     }
 }
