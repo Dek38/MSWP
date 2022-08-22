@@ -219,6 +219,14 @@ void MainWindow::buttonClicked()
     {
         currentButton->setEnabled(false);
         currentButton->showHidenValue();
+        auto checkToClick = [](Buttons* buttonToCheck)
+        {
+            if ((buttonToCheck->isEnabled()) &&
+                (!buttonToCheck->getFlag()))
+            {
+                buttonToCheck->clicked();
+            }
+        };
         // проверка на мины и пустые кнопки
         if (currentButton->text() == "*")
         {
@@ -231,75 +239,43 @@ void MainWindow::buttonClicked()
             int j = currentButton->getCoordY();
             if (j < (sizeOfFieldY - 1))
             {
-                auto currentButton = buttonArray[i * sizeOfFieldY + (j + 1)];
-                if ((currentButton->isEnabled()) &&
-                    (!currentButton->getFlag()))
-                {
-                    currentButton->clicked();
-                }
+                auto buttonToCheck = buttonArray[i * sizeOfFieldY + (j + 1)];
+                checkToClick(buttonToCheck);
             }
             if (j > 0)
             {
-                auto currentButton = buttonArray[i * sizeOfFieldY + (j - 1)];
-                if (currentButton->isEnabled() &&
-                   (!currentButton->getFlag()))
-                {
-                   currentButton->clicked();
-                }
+                auto buttonToCheck = buttonArray[i * sizeOfFieldY + (j - 1)];
+                checkToClick(buttonToCheck);
             }
             if (i < (sizeOfFieldX - 1))
             {
-                auto currentButton = buttonArray[(i + 1) * sizeOfFieldY + j];
-                if (currentButton->isEnabled() &&
-                   (!currentButton->getFlag()))
-                {
-                    currentButton->clicked();
-                }
+                auto buttonToCheck = buttonArray[(i + 1) * sizeOfFieldY + j];
+                checkToClick(buttonToCheck);
             }
             if (i > 0)
             {
-                auto currentButton = buttonArray[(i - 1) * sizeOfFieldY + j];
-                if (currentButton->isEnabled() &&
-                   (!currentButton->getFlag()))
-                {
-                    currentButton->clicked();
-                }
+                auto buttonToCheck = buttonArray[(i - 1) * sizeOfFieldY + j];
+                checkToClick(buttonToCheck);
             }
             if ((i < (sizeOfFieldX - 1)) && (j < (sizeOfFieldY - 1)))
             {
-                auto currentButton = buttonArray[(i + 1) * sizeOfFieldY + (j + 1)];
-                if (currentButton->isEnabled() &&
-                   (!currentButton->getFlag()))
-                {
-                    currentButton->clicked();
-                }
+                auto buttonToCheck = buttonArray[(i + 1) * sizeOfFieldY + (j + 1)];
+                checkToClick(buttonToCheck);
             }
             if ((i < (sizeOfFieldX - 1)) && (j > 0))
             {
-                auto currentButton = buttonArray[(i + 1) * sizeOfFieldY + (j - 1)];
-                if (currentButton->isEnabled() &&
-                   (!currentButton->getFlag()))
-                {
-                    currentButton->clicked();
-                }
+                auto buttonToCheck = buttonArray[(i + 1) * sizeOfFieldY + (j - 1)];
+                checkToClick(buttonToCheck);
             }
             if ((i > 0) && (j < (sizeOfFieldY - 1)))
             {
-                auto currentButton = buttonArray[(i - 1) * sizeOfFieldY + (j + 1)];
-                if (currentButton->isEnabled() &&
-                   (!currentButton->getFlag()))
-                {
-                    currentButton->clicked();;
-                }
+                auto buttonToCheck = buttonArray[(i - 1) * sizeOfFieldY + (j + 1)];
+                checkToClick(buttonToCheck);
             }
             if ((i > 0) && (j > 0))
             {
-                currentButton = buttonArray[(i - 1) * sizeOfFieldY + (j - 1)];
-                if (currentButton->isEnabled() &&
-                   (!currentButton->getFlag()))
-                {
-                    currentButton->clicked();
-                }
+                auto buttonToCheck = buttonArray[(i - 1) * sizeOfFieldY + (j - 1)];
+                checkToClick(buttonToCheck);
             }
         }
     }
